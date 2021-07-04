@@ -6,6 +6,12 @@ class MempoolTransaction():
     self.fee = int(fee)
     self.weight = int(weight)
     self.parents = parents
+
+  def __eq__(self, other):
+        return self.fee == other.fee
+
+  def __lt__(self, other):
+      return self.fee < other.fee
     
   def __repr__(self):
       return self.txid
@@ -18,7 +24,7 @@ def parse_mempool_csv():
       if transaction_block[0] == "tx_id":
         continue
       mempool_transactions_array.append(MempoolTransaction(*transaction_block))
-      break
 
 parse_mempool_csv()
 print(mempool_transactions_array)
+print(sorted(mempool_transactions_array, reverse=True))
