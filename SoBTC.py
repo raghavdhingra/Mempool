@@ -1,18 +1,24 @@
+mempool_transactions_array = []
+
+class MempoolTransaction(): 
+  def __init__(self, txid, fee, weight, parents): 
+    self.txid = txid 
+    self.fee = int(fee)
+    self.weight = int(weight)
+    self.parents = parents
+    
+  def __repr__(self):
+      return self.txid
+
 
 def parse_mempool_csv():
-  no_parent = 0
-  parent = 0
   with open('mempool.csv') as f:
     for line in f.readlines():
       transaction_block = line.strip().split(',')
       if transaction_block[0] == "tx_id":
         continue
-      if transaction_block[3] != "":
-        parent+=1
-      else:
-        no_parent+=1
-  print(parent)
-  print(no_parent)
-
+      mempool_transactions_array.append(MempoolTransaction(*transaction_block))
+      break
 
 parse_mempool_csv()
+print(mempool_transactions_array)
