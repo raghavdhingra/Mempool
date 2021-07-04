@@ -45,7 +45,7 @@ def parse_mempool_csv():
       mempool_transactions_array.append(MempoolTransaction(*transaction_block)) # Appending a list of transaction classes
   mempool_transactions_array = sorted(mempool_transactions_array, reverse=True) # Sorting based on fees in descending order
 
-def file_writer_txn_id(txn):
+def file_writer_txn_id(txn): # For block weight calculations, and writing the transaction id in block txt file
   global max_block_weight
   block_file = open("block.txt", "a")
   max_block_weight = max_block_weight - txn.fee
@@ -53,7 +53,7 @@ def file_writer_txn_id(txn):
   visited_transactions[txn.txid] = txn
   block_file.close()
 
-def has_parent_iterator(txn):
+def has_parent_iterator(txn): # Iteration over the transactions with parent id
   is_parent_visited = True
   for p_txn in txn.parent:
     if p_txn in visited_transactions:
@@ -67,7 +67,7 @@ def has_parent_iterator(txn):
       return 1
     file_writer_txn_id(txn)
 
-def transaction_iterator():
+def transaction_iterator(): # Iteration over the transaction for finding the parent and non parent transactions
   for txn in mempool_transactions_array:
     if len(txn.parent) == 0:
       # Has no parent
@@ -93,9 +93,9 @@ def transaction_iterator():
       if p_res == 1:
         break
 
-def initialise():
+def initialise(): # initialising all the events and the functions
   check_for_file()
   parse_mempool_csv()
   transaction_iterator()
 
-initialise()
+initialise() # Calling the initialise function
