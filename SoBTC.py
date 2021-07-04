@@ -1,20 +1,18 @@
 from os import path
 
 mempool_transactions_array = []
-has_parent_dict = {}
-no_parent_dict = {}
 
 visited_transactions = {}
 non_visited_transactions = {}
 
 max_block_weight = 4000000
 
-class MempoolTransaction(): 
-  def __init__(self, txid, fee, weight, parents): 
+class MempoolTransaction(): # Mempool transaction class, acting as a data store for a transaction
+  def __init__(self, txid, fee, weight, parent): 
     self.txid = txid 
     self.fee = int(fee)
     self.weight = int(weight)
-    self.parents = parents
+    self.parent = parent
 
   def __eq__(self, other):
         return self.fee == other.fee
@@ -26,7 +24,7 @@ class MempoolTransaction():
       return self.txid
 
 
-def check_for_file():
+def check_for_file(): # File Checker, whether the txt file is present or not
   file_name = "block.txt"
   if not path.exists(file_name):
     open(file_name, "x")
@@ -34,22 +32,26 @@ def check_for_file():
     open(file_name, 'w').close()
 
 def parse_mempool_csv():
-  with open('mempool.csv') as f:
-    for line in f.readlines():
-      transaction_block = line.strip().split(',')
-      if transaction_block[0] == "tx_id":
+  with open('mempool.csv') as f: # Reading mempool csv
+    for line in f.readlines(): # Reading lines
+      transaction_block = line.strip().split(',') # Spliting lines by commas (,) symbol
+      if transaction_block[0] == "tx_id": # Checking for the existence of header
         continue
-      if transaction_block[3] != "":
-        transaction_block[3] = transaction_block[3].split(";")
-        has_parent_dict[transaction_block[0]] = transaction_block
+      if transaction_block[3] != "": # Checking for the parents
+        transaction_block[3] = transaction_block[3].split(";") # if parent is present, converting it to arrays of parents, else empty array
       else:
-        no_parent_dict[transaction_block[0]] = transaction_block
-      mempool_transactions_array.append(MempoolTransaction(*transaction_block))
-  sorted(mempool_transactions_array, reverse=True)
+        transaction_block[3] = []
+      mempool_transactions_array.append(MempoolTransaction(*transaction_block)) # Appending a list of transaction classes
+  sorted(mempool_transactions_array, reverse=True) # Sorting based on fees in descending order
 
 def transaction_iterator():
   for txn in mempool_transactions_array:
-    print(txn.txid)
+    if len(txn.parent) == 0:
+      # Has no parent
+      print("no parent")
+    else:
+      # Has parent
+      print("Has parent")
     break
 
 
