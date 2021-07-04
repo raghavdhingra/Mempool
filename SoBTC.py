@@ -3,7 +3,7 @@ from os import path
 mempool_transactions_array = []
 
 visited_transactions = {}
-non_visited_transactions = {}
+non_visited_parent_transactions = {}
 
 max_block_weight = 4000000
 
@@ -32,6 +32,7 @@ def check_for_file(): # File Checker, whether the txt file is present or not
     open(file_name, 'w').close()
 
 def parse_mempool_csv():
+  global mempool_transactions_array
   with open('mempool.csv') as f: # Reading mempool csv
     for line in f.readlines(): # Reading lines
       transaction_block = line.strip().split(',') # Spliting lines by commas (,) symbol
@@ -42,18 +43,55 @@ def parse_mempool_csv():
       else:
         transaction_block[3] = []
       mempool_transactions_array.append(MempoolTransaction(*transaction_block)) # Appending a list of transaction classes
-  sorted(mempool_transactions_array, reverse=True) # Sorting based on fees in descending order
+  mempool_transactions_array = sorted(mempool_transactions_array, reverse=True) # Sorting based on fees in descending order
+
+def file_writer_txn_id(txn):
+  global max_block_weight
+  block_file = open("block.txt", "a")
+  max_block_weight = max_block_weight - txn.fee
+  block_file.write(txn.txid + "\n")
+  visited_transactions[txn.txid] = txn
+  block_file.close()
+
+def has_parent_iterator(txn):
+  is_parent_visited = True
+  for p_txn in txn.parent:
+    if p_txn in visited_transactions:
+      continue
+    else:
+      is_parent_visited = False
+      non_visited_parent_transactions[p_txn] = txn
+      break
+  if is_parent_visited:
+    if max_block_weight - txn.fee < 0:
+      return 1
+    file_writer_txn_id(txn)
 
 def transaction_iterator():
   for txn in mempool_transactions_array:
     if len(txn.parent) == 0:
       # Has no parent
-      print("no parent")
+      if max_block_weight - txn.fee < 0:
+        break
+      file_writer_txn_id(txn)
+      if txn.txid in non_visited_parent_transactions:
+        v_p_txn = non_visited_parent_transactions[txn.txid]
+        is_parent_visited = True
+        for p_txn in v_p_txn.parent:
+          if p_txn in visited_transactions:
+            continue
+          else:
+            is_parent_visited = False
+            non_visited_parent_transactions[p_txn] = txn
+            break
+        if is_parent_visited:
+          file_writer_txn_id(v_p_txn)
+          
     else:
       # Has parent
-      print("Has parent")
-    break
-
+      p_res = has_parent_iterator(txn)
+      if p_res == 1:
+        break
 
 def initialise():
   check_for_file()
@@ -61,4 +99,3 @@ def initialise():
   transaction_iterator()
 
 initialise()
-# print(mempool_transactions_array)
