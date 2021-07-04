@@ -55,8 +55,8 @@ def transaction_iterator():
 
 def initialise():
   check_for_file()
-  # parse_mempool_csv()
-  # transaction_iterator()
+  parse_mempool_csv()
+  transaction_iterator()
 
 initialise()
 # print(mempool_transactions_array)
